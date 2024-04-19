@@ -1,14 +1,23 @@
-# Menggunakan image base dengan Java 17
-FROM openjdk:17-jdk-slim AS build
+# Stage 1: Build the application
+FROM maven:3.8.1-openjdk-17-slim AS build
 
-# Menentukan working directory di dalam container
-WORKDIR /springboot-vaadin
+WORKDIR /app
 
-# Menyalin file .jar aplikasi Spring Boot ke dalam container
-COPY target/*.jar springboot-vaadin.jar
+# Copy pom.xml and source code to the container
+COPY pom.xml .
+COPY src ./src
 
-# Expose port yang digunakan oleh aplikasi Spring Boot
+# Package the application
+RUN mvn clean package -DskipTests
+
+# Stage 2: Run the application
+FROM openjdk:17-jdk-slim
+
+WORKDIR /app
+
+# Copy the built application from the build stage
+COPY --from=build /app/target/*.jar app.jar
+
 EXPOSE 8080
 
-# Menjalankan aplikasi Spring Boot saat container dijalankan
-ENTRYPOINT ["java","-jar","springboot-vaadin.jar"]
+ENTRYPOINT ["java","-jar","app.jar"]
