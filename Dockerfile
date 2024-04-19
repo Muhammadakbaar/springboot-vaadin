@@ -1,4 +1,4 @@
-FROM eclipse-temurin:17-jdk-alpine
-COPY run.sh .
+FROM openjdk:17-jdk-alpine
+EXPOSE 8080
 COPY target/*.jar app.jar
-ENTRYPOINT ["run.sh"]
+ENTRYPOINT ["java","-jar","/app.jar"]
