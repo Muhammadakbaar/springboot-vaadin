@@ -1,23 +1,23 @@
-# Stage 1: Build the application
-FROM maven:3.8.1-openjdk-17-slim AS build
+# Start with a base image that has Java 17 installed.
+FROM openjdk:17-jdk-alpine 
 
+# Set a default directory inside the container to work from.
 WORKDIR /app
 
-# Copy pom.xml and source code to the container
-COPY pom.xml .
-COPY src ./src
+# Copy the special Maven files that help us download dependencies.
+COPY .mvn/ .mvn/
 
-# Package the application
-RUN mvn clean package -DskipTests
+# Copy only essential Maven files required to download dependencies.
+COPY mvnw pom.xml ./
 
-# Stage 2: Run the application
-FROM openjdk:17-jdk-slim
+# Download all the required project dependencies.
+RUN ./mvnw dependency:resolve
 
-WORKDIR /app
+# Copy our actual project files (code, resources, etc.) into the container.
+COPY src/ ./src/
 
-# Copy the built application from the build stage
-COPY --from=build /app/target/*.jar app.jar
+# When the container starts, run the Spring Boot app using Maven.
+CMD ["./mvnw", "spring-boot:run"]
 
+# Expose the port the Spring Boot app runs on, so it can be accessed from outside the container.
 EXPOSE 8080
-
-ENTRYPOINT ["java","-jar","app.jar"]

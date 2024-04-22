@@ -1,0 +1,21 @@
+version: '3.8'
+networks:
+  app-network:
+    driver: bridge
+services:
+  postgres:
+    image: postgres
+    environment:
+      POSTGRES_DB: coba
+      POSTGRES_USER: akbar
+      POSTGRES_PASSWORD: 01111997
+  springbootapp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+
+      
